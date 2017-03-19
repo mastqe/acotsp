@@ -21,7 +21,7 @@ clean:
 	@$(RM) ./out/*.o acotsp
 
 acotsp: ./out/acotsp.o ./out/TSP.o ./out/ants.o ./out/InOut.o ./out/utilities.o ./out/ls.o ./out/parse.o ./out/$(TIMER)_timer.o
-	$(CC) $(CFLAGS) $(LDLIBS) -o acotsp $(OUT_FILES)
+	$(CC) $(CFLAGS) -o acotsp $(OUT_FILES) $(LDLIBS) 
 
 ./out/acotsp.o: ./src/acotsp.c
 	$(CC) $(CFLAGS) -c -o $@ $<
