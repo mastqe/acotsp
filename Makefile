@@ -4,7 +4,8 @@ VERSION=1.03
 CC = gcc
 OPTIM_FLAGS = -O1
 WARN_FLAGS = -Wall -ansi -pedantic
-CFLAGS = $(WARN_FLAGS) $(OPTIM_FLAGS)
+# PROF_FLAGS = -pg -fprofile-arcs -ftest-coverage
+CFLAGS = $(WARN_FLAGS) $(OPTIM_FLAGS) $(PROF_FLAGS)
 
 LDLIBS = -lm
 
