@@ -19,7 +19,7 @@ OUT_FILES = $(wildcard ./out/*.o)
 all: clean acotsp
 
 clean:
-	@$(RM) ./out/*.o acotsp
+	@$(RM) ./out/* acotsp
 
 acotsp: ./out/acotsp.o ./out/TSP.o ./out/ants.o ./out/InOut.o ./out/utilities.o ./out/ls.o ./out/parse.o ./out/$(TIMER)_timer.o
 	$(CC) $(CFLAGS) -o acotsp $(OUT_FILES) $(LDLIBS) 

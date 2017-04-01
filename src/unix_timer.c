@@ -43,13 +43,13 @@ void start_timers(void)
 {
     getrusage( RUSAGE_SELF, &res );
     virtual_time = (double) res.ru_utime.tv_sec +
-		   (double) res.ru_stime.tv_sec +
-		   (double) res.ru_utime.tv_usec / 1000000.0 +
-		   (double) res.ru_stime.tv_usec / 1000000.0;
+		           (double) res.ru_stime.tv_sec +
+        		   (double) res.ru_utime.tv_usec / 1000000.0 +
+		           (double) res.ru_stime.tv_usec / 1000000.0;
 
     gettimeofday( &tp, NULL );
     real_time =    (double) tp.tv_sec +
-		   (double) tp.tv_usec / 1000000.0;
+		           (double) tp.tv_usec / 1000000.0;
 }
 
 
@@ -65,16 +65,16 @@ double elapsed_time(TIMER_TYPE type)
     if (type == REAL) {
         gettimeofday( &tp, NULL );
         return( (double) tp.tv_sec +
-		(double) tp.tv_usec / 1000000.0
-		- real_time );
+        		(double) tp.tv_usec / 1000000.0
+		        - real_time );
     }
     else {
         getrusage( RUSAGE_SELF, &res );
         return( (double) res.ru_utime.tv_sec +
-		(double) res.ru_stime.tv_sec +
-		(double) res.ru_utime.tv_usec / 1000000.0 +
-		(double) res.ru_stime.tv_usec / 1000000.0
-		- virtual_time );
+		        (double) res.ru_stime.tv_sec +
+		        (double) res.ru_utime.tv_usec / 1000000.0 +
+		        (double) res.ru_stime.tv_usec / 1000000.0
+		        - virtual_time );
     }
 
 }

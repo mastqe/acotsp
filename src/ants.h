@@ -22,8 +22,8 @@
 
     Program's name: acotsp
 
-    Ant Colony Optimization algorithms (AS, ACS, EAS, RAS, MMAS, BWAS) for the 
-    symmetric TSP 
+    Ant Colony Optimization algorithms (AS, ACS, EAS, RAS, MMAS, BWAS) for the
+    symmetric TSP
 
     Copyright (C) 2004  Thomas Stuetzle
 
@@ -53,7 +53,7 @@
 
 
 #define HEURISTIC(m,n)     (1.0 / ((double) instance.distance[m][n] + 0.1))
-/* add a small constant to avoid division by zero if a distance is 
+/* add a small constant to avoid division by zero if a distance is
 zero */
 
 #define EPSILON            0.00000000000000000000000000000001
@@ -61,9 +61,9 @@ zero */
 #define MAX_ANTS       1024    /* max no. of ants */
 #define MAX_NEIGHBOURS 512     /* max. no. of nearest neighbours in candidate set */
 
-/* Note that *tour needs to be allocated for length n+1 since the first city of 
-a tour (at position 0) is repeated at position n. This is done to make the 
-computation of the tour length easier 
+/* Note that *tour needs to be allocated for length n+1 since the first city of
+a tour (at position 0) is repeated at position n. This is done to make the
+computation of the tour length easier
 */
 typedef struct {
   long int  *tour;
@@ -98,7 +98,7 @@ extern long int mmas_flag;   /* = 1, run MAX-MIN ant system */
 extern long int bwas_flag;   /* = 1, run best-worst ant system */
 extern long int acs_flag;    /* = 1, run ant colony system */
 
-extern long int elitist_ants;    /* additional parameter for elitist ant system, 
+extern long int elitist_ants;    /* additional parameter for elitist ant system,
 				    it defines the number of elitist ants */
 
 extern long int ras_ranks;       /* additional parameter for rank-based version of ant

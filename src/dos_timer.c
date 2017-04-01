@@ -22,8 +22,8 @@
 
     Program's name: acotsp
 
-    Ant Colony Optimization algorithms (AS, ACS, EAS, RAS, MMAS, BWAS) for the 
-    symmetric TSP 
+    Ant Colony Optimization algorithms (AS, ACS, EAS, RAS, MMAS, BWAS) for the
+    symmetric TSP
 
     Copyright (C) 2004  Thomas Stuetzle
 
@@ -64,13 +64,13 @@ static double elapsed;
 
 
 void start_timers(void)
-/*    
-      FUNCTION:       virtual and real time of day are computed and stored to 
-                      allow at later time the computation of the elapsed time 
-		      (virtual or real) 
+/*
+      FUNCTION:       virtual and real time of day are computed and stored to
+                      allow at later time the computation of the elapsed time
+		      (virtual or real)
       INPUT:          none
       OUTPUT:         none
-      (SIDE)EFFECTS:  virtual and real time are computed   
+      (SIDE)EFFECTS:  virtual and real time are computed
 */
 {
     start_time = clock();
@@ -79,8 +79,8 @@ void start_timers(void)
 
 
 double elapsed_time(TIMER_TYPE type)
-/*    
-      FUNCTION:       return the time used in seconds (virtual or real, depending on type) 
+/*
+      FUNCTION:       return the time used in seconds (virtual or real, depending on type)
       INPUT:          TIMER_TYPE (virtual or real time)
       OUTPUT:         seconds since last call to start_timers (virtual or real)
       (SIDE)EFFECTS:  none

@@ -22,8 +22,8 @@
 
     Program's name: acotsp
 
-    Ant Colony Optimization algorithms (AS, ACS, EAS, RAS, MMAS, BWAS) for the 
-    symmetric TSP 
+    Ant Colony Optimization algorithms (AS, ACS, EAS, RAS, MMAS, BWAS) for the
+    symmetric TSP
 
     Copyright (C) 2004  Thomas Stuetzle
 
@@ -80,16 +80,16 @@ static double dtrunc (double x)
 
 long int  (*distance)(long int, long int);  /* function pointer */
 
-/*    
-      FUNCTION: the following four functions implement different ways of 
+/*
+      FUNCTION: the following four functions implement different ways of
                 computing distances for TSPLIB instances
       INPUT:    two node indices
       OUTPUT:   distance between the two nodes
 */
 
-long int round_distance (long int i, long int j) 
-/*    
-      FUNCTION: compute Euclidean distances between two nodes rounded to next 
+long int round_distance (long int i, long int j)
+/*
+      FUNCTION: compute Euclidean distances between two nodes rounded to next
                 integer for TSPLIB instances
       INPUT:    two node indices
       OUTPUT:   distance between the two nodes
@@ -103,9 +103,9 @@ long int round_distance (long int i, long int j)
     return (long int) r;
 }
 
-long int ceil_distance (long int i, long int j) 
-/*    
-      FUNCTION: compute ceiling distance between two nodes rounded to next 
+long int ceil_distance (long int i, long int j)
+/*
+      FUNCTION: compute ceiling distance between two nodes rounded to next
                 integer for TSPLIB instances
       INPUT:    two node indices
       OUTPUT:   distance between the two nodes
@@ -119,9 +119,9 @@ long int ceil_distance (long int i, long int j)
     return (long int)(ceil (r));
 }
 
-long int geo_distance (long int i, long int j) 
-/*    
-      FUNCTION: compute geometric distance between two nodes rounded to next 
+long int geo_distance (long int i, long int j)
+/*
+      FUNCTION: compute geometric distance between two nodes rounded to next
                 integer for TSPLIB instances
       INPUT:    two node indices
       OUTPUT:   distance between the two nodes
@@ -133,7 +133,7 @@ long int geo_distance (long int i, long int j)
     double lati, latj, longi, longj;
     double q1, q2, q3;
     long int dd;
-    double x1 = instance.nodeptr[i].x, x2 = instance.nodeptr[j].x, 
+    double x1 = instance.nodeptr[i].x, x2 = instance.nodeptr[j].x,
 	y1 = instance.nodeptr[i].y, y2 = instance.nodeptr[j].y;
 
     deg = dtrunc (x1);
@@ -158,9 +158,9 @@ long int geo_distance (long int i, long int j)
 
 }
 
-long int att_distance (long int i, long int j) 
-/*    
-      FUNCTION: compute ATT distance between two nodes rounded to next 
+long int att_distance (long int i, long int j)
+/*
+      FUNCTION: compute ATT distance between two nodes rounded to next
                 integer for TSPLIB instances
       INPUT:    two node indices
       OUTPUT:   distance between the two nodes
@@ -183,7 +183,7 @@ long int att_distance (long int i, long int j)
 
 
 long int ** compute_distances(void)
-/*    
+/*
       FUNCTION: computes the matrix of all intercity distances
       INPUT:    none
       OUTPUT:   pointer to distance matrix, has to be freed when program stops
@@ -193,23 +193,26 @@ long int ** compute_distances(void)
     long int     **matrix;
 
     if((matrix = malloc(sizeof(long int) * n * n +
-			sizeof(long int *) * n	 )) == NULL){
-	fprintf(stderr,"Out of memory, exit.");
-	exit(1);
+                    sizeof(long int *) * n	 )) == NULL){
+        fprintf(stderr,"Out of memory, exit.");
+        exit(1);
     }
+
     for ( i = 0 ; i < n ; i++ ) {
-	matrix[i] = (long int *)(matrix + n) + i*n;
-	for ( j = 0  ; j < n ; j++ ) {
-	    matrix[i][j] = distance(i, j);
-	}
+        matrix[i] = (long int *)(matrix + n) + i*n;
+
+        for ( j = 0  ; j < n ; j++ ) {
+            matrix[i][j] = distance(i, j);
+        }
     }
+
     return matrix;
 }
 
 
 
 long int ** compute_nn_lists( void )
-/*    
+/*
       FUNCTION: computes nearest neighbor lists of depth nn for each city
       INPUT:    none
       OUTPUT:   pointer to the nearest neighbor lists
@@ -219,46 +222,52 @@ long int ** compute_nn_lists( void )
     long int *distance_vector;
     long int *help_vector;
     long int **m_nnear;
- 
-    TRACE ( printf("\n computing nearest neighbor lists, "); )
+
+    TRACE ( printf("\n computing nearest neighbor lists, "); );
 
     nn = MAX(nn_ls,nn_ants);
-    if ( nn >= n ) 
-	nn = n - 1;
-    DEBUG ( assert( n > nn ); )
-    
-    TRACE ( printf("nn = %ld ... \n",nn); ) 
+    if ( nn >= n )
+        nn = n - 1;
+
+    DEBUG ( assert( n > nn ); );
+    TRACE ( printf("nn = %ld ... \n",nn); );
 
     if((m_nnear = malloc(sizeof(long int) * n * nn
-			     + n * sizeof(long int *))) == NULL){
-	exit(EXIT_FAILURE);
+                    + n * sizeof(long int *))) == NULL){
+        exit(EXIT_FAILURE);
     }
+
     distance_vector = calloc(n, sizeof(long int));
     help_vector = calloc(n, sizeof(long int));
- 
-    for ( node = 0 ; node < n ; node++ ) {  /* compute cnd-sets for all node */
-	m_nnear[node] = (long int *)(m_nnear + n) + node * nn;
 
-	for ( i = 0 ; i < n ; i++ ) {  /* Copy distances from nodes to the others */
-	    distance_vector[i] = instance.distance[node][i];
-	    help_vector[i] = i;
-	}
-	distance_vector[node] = LONG_MAX;  /* city is not nearest neighbour */
-	sort2(distance_vector, help_vector, 0, n-1);
-	for ( i = 0 ; i < nn ; i++ ) {
-	    m_nnear[node][i] = help_vector[i];
-	}
+    for ( node = 0 ; node < n ; node++ ) {  /* compute cnd-sets for all node */
+        m_nnear[node] = (long int *)(m_nnear + n) + node * nn;
+
+        for ( i = 0 ; i < n ; i++ ) {  /* Copy distances from nodes to the others */
+            distance_vector[i] = instance.distance[node][i];
+            help_vector[i] = i;
+        }
+
+        distance_vector[node] = LONG_MAX;  /* city is not nearest neighbour */
+        sort2(distance_vector, help_vector, 0, n-1);
+
+        for ( i = 0 ; i < nn ; i++ ) {
+            m_nnear[node][i] = help_vector[i];
+        }
     }
+
     free(distance_vector);
     free(help_vector);
-    TRACE ( printf("\n    .. done\n"); )
+
+    TRACE ( printf("\n    .. done\n"); );
+
     return m_nnear;
 }
 
 
 
-long int compute_tour_length( long int *t ) 
-/*    
+long int compute_tour_length( long int *t )
+/*
       FUNCTION: compute the tour length of tour t
       INPUT:    pointer to tour t
       OUTPUT:   tour length of tour t
@@ -266,9 +275,9 @@ long int compute_tour_length( long int *t )
 {
     int      i;
     long int tour_length = 0;
-  
+
     for ( i = 0 ; i < n ; i++ ) {
-	tour_length += instance.distance[t[i]][t[i+1]];
+        tour_length += instance.distance[t[i]][t[i+1]];
     }
     return tour_length;
 }
@@ -307,14 +316,19 @@ int tsp_check_tour(const long int *t)
         fprintf(stderr,"\n%s:error: permutation is not a closed tour.", __FUNCTION__);
         goto error;
     }
+
     free (used);
+
     return TRUE;
 
 error:
     fprintf(stderr,"\n%s:error: solution_vector:", __FUNCTION__);
+
     for (i = 0; i < size; i++)
         fprintf(stderr, " %ld", t[i]);
+
     fprintf(stderr,"\n");
     free(used);
+
     return FALSE;
 }

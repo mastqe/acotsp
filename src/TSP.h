@@ -22,8 +22,8 @@
 
     Program's name: acotsp
 
-    Ant Colony Optimization algorithms (AS, ACS, EAS, RAS, MMAS, BWAS) for the 
-    symmetric TSP 
+    Ant Colony Optimization algorithms (AS, ACS, EAS, RAS, MMAS, BWAS) for the
+    symmetric TSP
 
     Copyright (C) 2004  Thomas Stuetzle
 
@@ -68,7 +68,7 @@ struct problem{
   long int      n;                      /* number of cities */
   long int      n_near;                 /* number of nearest neighbors */
   struct point  *nodeptr;               /* array of structs containing coordinates of nodes */
-  long int      **distance;	        /* distance matrix: distance[i][j] gives distance 
+  long int      **distance;	        /* distance matrix: distance[i][j] gives distance
 					   between city i und j */
   long int      **nn_list;              /* nearest neighbor list; contains for each node i a
                                            sorted list of n_near nearest neighbors */

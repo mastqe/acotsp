@@ -22,8 +22,8 @@
 
     Program's name: acotsp
 
-    Ant Colony Optimization algorithms (AS, ACS, EAS, RAS, MMAS, BWAS) for the 
-    symmetric TSP 
+    Ant Colony Optimization algorithms (AS, ACS, EAS, RAS, MMAS, BWAS) for the
+    symmetric TSP
 
     Copyright (C) 2004  Thomas Stuetzle
 
@@ -61,7 +61,7 @@ struct point * read_etsp(const char *tsp_file_name);
 extern long int *best_in_try;
 extern long int *best_found_at;
 extern double   *time_best_found;
-extern double   *time_total_run;   
+extern double   *time_total_run;
 
 extern long int n_try;        /* number of try */
 extern long int n_tours;      /* number of constructed tours */
