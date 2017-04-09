@@ -1,3 +1,8 @@
+To make with OpenMP support use `make PAR_FLAGS=-fopenmp`
+
+###################################################### 
+###################################################### 
+###################################################### 
 
        AAAA    CCCC   OOOO   TTTTTT   SSSSS  PPPPP
       AA  AA  CC     OO  OO    TT    SS      PP  PP

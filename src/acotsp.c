@@ -101,23 +101,30 @@ void construct_solutions( void )
     }
 
     step = 0;
-    /* Place the ants on same initial city */
+    /* Place the ants on random initial city */
     for ( k = 0 ; k < n_ants ; k++ )
-        place_ant( &ant[k], step);
+        place_ant( &ant[k], step); // TODO uses non-reentrant ran01
 
+    // n is number of cities in problem
     while ( step < n-1 ) {
         step++;
         for ( k = 0 ; k < n_ants ; k++ ) {
-            neighbour_choose_and_move_to_next( &ant[k], step);
+            neighbour_choose_and_move_to_next( &ant[k], step );
             if ( acs_flag )
                 local_acs_pheromone_update( &ant[k], step );
         }
     }
 
     step = n;
+#   pragma omp parallel for \
+    default(none) private(k) shared(n_ants, ant, n, acs_flag, step)
     for ( k = 0 ; k < n_ants ; k++ ) {
+        
+        // Connect the tour (ie end at beginning city)
         ant[k].tour[n] = ant[k].tour[0];
+        // Sums distances of all segements in tour
         ant[k].tour_length = compute_tour_length( ant[k].tour );
+        
         if ( acs_flag )
             local_acs_pheromone_update( &ant[k], step );
     }

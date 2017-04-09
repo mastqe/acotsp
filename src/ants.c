@@ -565,6 +565,7 @@ void neighbour_choose_and_move_to_next( ant_struct *a , long int phase )
         return;
     }
 
+    // TODO Only a single dim array of probabilities...
     prob_ptr = prob_of_selection;
 
     current_city = a->tour[phase-1]; /* current_city city of ant k */

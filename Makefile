@@ -3,9 +3,10 @@ VERSION=1.03
 
 CC = gcc
 OPTIM_FLAGS = -O1
-WARN_FLAGS = -Wall -ansi -pedantic
+WARN_FLAGS = -Wall -std=c99 -pedantic -Wno-unused-result
 # PROF_FLAGS = -pg -fprofile-arcs -ftest-coverage
-CFLAGS = $(WARN_FLAGS) $(OPTIM_FLAGS) $(PROF_FLAGS)
+PAR_FLAGS = #-fopenmp
+CFLAGS = $(WARN_FLAGS) $(OPTIM_FLAGS) $(PROF_FLAGS) $(PAR_FLAGS)
 
 LDLIBS = -lm
 
