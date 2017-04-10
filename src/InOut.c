@@ -66,7 +66,6 @@
 #include "ls.h"
 #include "parse.h"
 
-
 long int *best_in_try;
 long int *best_found_at;
 double   *time_best_found;
@@ -80,6 +79,8 @@ double   restart_time;      /* remember time when restart was done if any */
 long int max_tries;         /* maximum number of independent tries */
 long int max_tours;         /* maximum number of tour constructions in one try */
 long int seed;
+
+long int *thd_seed = NULL;
 
 double   lambda;            /* Parameter to determine branching factor */
 double   branch_fac;        /* If branching factor < branch_fac => update trails */

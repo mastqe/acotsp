@@ -76,6 +76,7 @@
 #define MASK 123459876
 
 extern long int seed;
+extern long int *thd_seed;
 
 double mean ( long int *values, long int max);
 

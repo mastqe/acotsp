@@ -65,7 +65,9 @@
 #include "utilities.h"
 #include "timer.h"
 
-
+#ifdef _OPENMP
+    #include <omp.h>
+#endif
 
 ant_struct *ant;
 ant_struct *best_so_far_ant;
@@ -74,7 +76,7 @@ ant_struct *restart_best_ant;
 double   **pheromone;
 double   **total;
 
-double   *prob_of_selection;
+/* double   *prob_of_selection; */
 
 long int n_ants;      /* number of ants */
 long int nn_ants;     /* length of nearest neighbor lists for the ants'
@@ -144,12 +146,14 @@ void allocate_ants ( void )
     restart_best_ant->tour        = calloc(n+1, sizeof(long int));
     restart_best_ant->visited     = calloc(n, sizeof(char));
 
-    if ((prob_of_selection = malloc(sizeof(double) * (nn_ants + 1))) == NULL) {
-        printf("Out of memory, exit.");
-        exit(1);
-    }
-    /* Ensures that we do not run over the last element in the random wheel.  */
-    prob_of_selection[nn_ants] = HUGE_VAL;
+    /*
+     * if ((prob_of_selection = malloc(sizeof(double) * (nn_ants + 1))) == NULL) {
+     *     printf("Out of memory, exit.");
+     *     exit(1);
+     * }
+     * [> Ensures that we do not run over the last element in the random wheel. <]
+     * prob_of_selection[nn_ants] = HUGE_VAL;
+     */
 }
 
 
@@ -411,7 +415,13 @@ void place_ant( ant_struct *a , long int step )
 {
     long int     rnd;
 
-    rnd = (long int) (ran01( &seed ) * (double) n); /* random number between 0 .. n-1 */
+    /* random number between 0 .. n-1 */
+#   ifdef _OPENMP
+    rnd = (long int) (ran01( &thd_seed[omp_get_thread_num()] ) * (double) n);
+#   else
+    rnd = (long int) (ran01( &seed ) * (double) n);
+#   endif
+
     a->tour[step] = rnd;
     a->visited[rnd] = TRUE;
 }
@@ -549,13 +559,25 @@ void neighbour_choose_and_move_to_next( ant_struct *a , long int phase )
     long int i, help;
     long int current_city;
     double   rnd, partial_sum = 0., sum_prob = 0.0;
-    /*  double   *prob_of_selection; */ /* stores the selection probabilities
+    double   *prob_of_selection; /* stores the selection probabilities
                                            of the nearest neighbor cities */
+
+    if ((prob_of_selection = malloc(sizeof(double) * (nn_ants + 1))) == NULL) {
+        printf("Out of memory, exit.");
+        exit(1);
+    }
+    /* Ensures that we do not run over the last element in the random wheel. */
+    prob_of_selection[nn_ants] = HUGE_VAL;
+
     double   *prob_ptr;
 
+#   ifdef _OPENMP
+    long int* this_seed = &thd_seed[omp_get_thread_num()];
+#   else
+    long int* this_seed = &seed;
+#   endif
 
-
-    if ( (q_0 > 0.0) && (ran01( &seed ) < q_0)  ) {
+    if ( (q_0 > 0.0) && (ran01( this_seed ) < q_0)  ) {
         /* with a probability q_0 make the best possible choice
            according to pheromone trails and heuristic information */
         /* we first check whether q_0 > 0.0, to avoid the very common case
@@ -565,7 +587,6 @@ void neighbour_choose_and_move_to_next( ant_struct *a , long int phase )
         return;
     }
 
-    // TODO Only a single dim array of probabilities...
     prob_ptr = prob_of_selection;
 
     current_city = a->tour[phase-1]; /* current_city city of ant k */
@@ -590,7 +611,13 @@ void neighbour_choose_and_move_to_next( ant_struct *a , long int phase )
     else {
         /* at least one neighbor is eligible, chose one according to the
            selection probabilities */
+
+#       ifdef _OPENMP
+        rnd = ran01( &thd_seed[omp_get_thread_num()] );
+#       else
         rnd = ran01( &seed );
+#       endif
+
         rnd *= sum_prob;
         i = 0;
         partial_sum = prob_ptr[i];
@@ -619,6 +646,8 @@ void neighbour_choose_and_move_to_next( ant_struct *a , long int phase )
         a->tour[phase] = help; /* instance.nn_list[current_city][i]; */
         a->visited[help] = TRUE;
     }
+
+    free(prob_of_selection);
 }
 
 
@@ -804,7 +833,7 @@ void bwas_worst_ant_update( ant_struct *a1, ant_struct *a2)
 */
 {
     long int    i, j, h, pos, pred;
-    long int    distance;
+    //long int    distance;
     long int    *pos2;        /* positions of cities in tour of ant a2 */
 
     TRACE ( printf("bwas specific: best-worst pheromone update\n"); );
@@ -814,7 +843,7 @@ void bwas_worst_ant_update( ant_struct *a1, ant_struct *a2)
         pos2[a2->tour[i]] = i;
     }
 
-    distance = 0;
+    //distance = 0;
     for ( i = 0 ; i < n ; i++ ) {
         j = a1->tour[i];
         h = a1->tour[i+1];

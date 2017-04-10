@@ -62,7 +62,6 @@
 #include "ants.h"
 #include "timer.h"
 
-
 double mean( long int *values, long int max )
 /*
       FUNCTION:       compute the average value of an integer array of length max

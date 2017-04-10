@@ -66,6 +66,9 @@
 #include "timer.h"
 #include "ls.h"
 
+#ifdef _OPENMP
+    #include <omp.h>
+#endif
 
 
 long int termination_condition( void )
@@ -95,38 +98,48 @@ void construct_solutions( void )
 
     TRACE ( printf("construct solutions for all ants\n"); );
 
-    /* Mark all cities as unvisited */
-    for ( k = 0 ; k < n_ants ; k++) {
-        ant_empty_memory( &ant[k] );
-    }
+#   pragma omp parallel \
+    default(none) private(k,step) shared(n_ants, ant, n, acs_flag)
+    {
 
-    step = 0;
-    /* Place the ants on random initial city */
-    for ( k = 0 ; k < n_ants ; k++ )
-        place_ant( &ant[k], step); // TODO uses non-reentrant ran01
-
-    // n is number of cities in problem
-    while ( step < n-1 ) {
-        step++;
-        for ( k = 0 ; k < n_ants ; k++ ) {
-            neighbour_choose_and_move_to_next( &ant[k], step );
-            if ( acs_flag )
-                local_acs_pheromone_update( &ant[k], step );
+        /* Mark all cities as unvisited */
+#       pragma omp for
+        for ( k = 0 ; k < n_ants ; k++) {
+            ant_empty_memory( &ant[k] );
         }
-    }
 
-    step = n;
-#   pragma omp parallel for \
-    default(none) private(k) shared(n_ants, ant, n, acs_flag, step)
-    for ( k = 0 ; k < n_ants ; k++ ) {
-        
-        // Connect the tour (ie end at beginning city)
-        ant[k].tour[n] = ant[k].tour[0];
-        // Sums distances of all segements in tour
-        ant[k].tour_length = compute_tour_length( ant[k].tour );
-        
-        if ( acs_flag )
-            local_acs_pheromone_update( &ant[k], step );
+        /* Place the ants on random initial city */
+#       pragma omp for
+        for ( k = 0 ; k < n_ants ; k++ ) {
+            place_ant( &ant[k], 0 ); // TODO uses non-reentrant ran01
+        }
+
+#       pragma omp for
+        for ( k = 0 ; k < n_ants ; k++ ) {
+
+            for ( step = 1; step < n; step++ ) {
+                neighbour_choose_and_move_to_next( &ant[k], step );
+            }
+
+            if ( acs_flag ) {
+                local_acs_pheromone_update( &ant[k], step );
+            }
+        }
+
+        step = n;
+
+#       pragma omp for
+        for ( k = 0 ; k < n_ants ; k++ ) {
+
+            // Connect the tour (ie end at beginning city)
+            ant[k].tour[n] = ant[k].tour[0];
+            // Sums distances of all segements in tour
+            ant[k].tour_length = compute_tour_length( ant[k].tour );
+
+            if ( acs_flag ) {
+                local_acs_pheromone_update( &ant[k], step );
+            }
+        }
     }
 
     n_tours += n_ants;
@@ -591,6 +604,21 @@ int main(int argc, char *argv[])
     pheromone = generate_double_matrix( n, n );
     total = generate_double_matrix( n, n );
 
+#ifdef _OPENMP
+    // Seeds for parallel random number generation
+    if ((thd_seed = malloc(sizeof(long int) * omp_get_max_threads())) == NULL) {
+        printf("Out of memory, exit.");
+        exit(1);
+    }
+
+#   pragma omp parallel
+    {
+        int rank = omp_get_thread_num();
+        thd_seed[rank] = (long int) time(NULL) + rank;
+        printf("thd_seed %d: %ld\n", rank, thd_seed[rank]);
+    }
+#endif
+
     time_used = elapsed_time( REAL );
     printf("Initialization took %.10f seconds\n",time_used);
 
@@ -636,7 +664,7 @@ int main(int argc, char *argv[])
     free( ant );
     free( best_so_far_ant->tour );
     free( best_so_far_ant->visited );
-    free( prob_of_selection );
+    /* free( prob_of_selection ); */
 
     return(0);
 }
