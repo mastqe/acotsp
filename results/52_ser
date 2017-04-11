@@ -1,0 +1,89 @@
+
+ACO algorithms for the TSP, v1.03
+	 OPTIONS:
+  -t  --time with argument "1000.000"
+  -r  --tries with argument "1"
+	Note: maximum number tours is set to default 0
+	Note: a seed was generated as 1491944616
+  -o  --optimum with argument "7919"
+  -i  --tsplibfile with argument "../tsplib/berlin52.tsp"
+mmas_flag is set to 1, run MAX-MIN Ant System
+  -l  --localsearch with argument "0"
+  -m  --ants with argument "992"
+	Note: number of nearest neighbours in tour construction is set to default 20
+	Note: alpha is set to default 1
+	Note: beta is set to default 2
+	Note: rho is set to default 0.02
+	Note: q_0 is set to default 0
+	Note: number of elitist ants is set to default n
+	Note: number of ranks is set to default 0
+	Note: number nearest neighbours in local search is set to default 20
+	Note: dlb flag is set to default 1 (use don't look bits)
+Non-option arguments:
+
+reading tsp-file ../tsplib/berlin52.tsp ... 
+
+EUC_2D
+EUC_2D
+calculating distance matrix ..
+
+ .. done
+
+Parameter-settings: 
+
+max_tries		 1
+max_tours		 0
+max_time		 1000.00
+seed		 1491944616
+optimum			 7919
+n_ants			 992
+nn_ants			 20
+alpha			 1.00
+beta			 2.00
+rho			 0.02
+q_0			 0.00
+elitist_ants		 0
+ras_ranks		 0
+ls_flag			 0
+nn_ls			 20
+dlb_flag		 1
+as_flag			 0
+eas_flag		 0
+ras_flag		 0
+mmas_flag		 1
+bwas_flag		 0
+acs_flag		 0
+
+allocate ants' memory ..
+
+ .. done
+Initialization took 0.0015599728 seconds
+best 9674, iteration: 1, time 0.02
+best 9520, iteration: 2, time 0.02
+best 9412, iteration: 7, time 0.06
+best 9226, iteration: 13, time 0.10
+best 9163, iteration: 34, time 0.25
+best 9092, iteration: 47, time 0.33
+best 9029, iteration: 49, time 0.34
+best 8548, iteration: 57, time 0.39
+best 8479, iteration: 99, time 0.65
+
+best so far 8479, iteration: 100, time 0.76, b_fac 4.28846
+try 0, iteration 100, b-fac 4.288462 
+
+best 8448, iteration: 103, time 0.78
+best 8290, iteration: 105, time 0.79
+best 8285, iteration: 109, time 0.82
+best 8262, iteration: 114, time 0.85
+best 8225, iteration: 118, time 0.88
+best 8075, iteration: 123, time 0.91
+best 7973, iteration: 125, time 0.92
+best 7954, iteration: 144, time 1.04
+best 7892, iteration: 150, time 1.08
+
+ Best Solution in try 0 is 7892
+ Best Solution was found after 150 iterations
+
+try 0, Best 7892, found at iteration 150, found at time 1.076641
+ t_avgbest = 1.076641
+ t_avgtotal = 1.076680

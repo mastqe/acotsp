@@ -1,0 +1,117 @@
+
+ACO algorithms for the TSP, v1.03
+	 OPTIONS:
+  -t  --time with argument "1000.000"
+  -r  --tries with argument "1"
+	Note: maximum number tours is set to default 0
+	Note: a seed was generated as 1491944618
+  -o  --optimum with argument "7919"
+  -i  --tsplibfile with argument "../tsplib/berlin52.tsp"
+mmas_flag is set to 1, run MAX-MIN Ant System
+  -l  --localsearch with argument "0"
+  -m  --ants with argument "992"
+	Note: number of nearest neighbours in tour construction is set to default 20
+	Note: alpha is set to default 1
+	Note: beta is set to default 2
+	Note: rho is set to default 0.02
+	Note: q_0 is set to default 0
+	Note: number of elitist ants is set to default n
+	Note: number of ranks is set to default 0
+	Note: number nearest neighbours in local search is set to default 20
+	Note: dlb flag is set to default 1 (use don't look bits)
+Non-option arguments:
+
+reading tsp-file ../tsplib/berlin52.tsp ... 
+
+EUC_2D
+EUC_2D
+calculating distance matrix ..
+
+ .. done
+
+Parameter-settings: 
+
+max_tries		 1
+max_tours		 0
+max_time		 1000.00
+seed		 1491944618
+optimum			 7919
+n_ants			 992
+nn_ants			 20
+alpha			 1.00
+beta			 2.00
+rho			 0.02
+q_0			 0.00
+elitist_ants		 0
+ras_ranks		 0
+ls_flag			 0
+nn_ls			 20
+dlb_flag		 1
+as_flag			 0
+eas_flag		 0
+ras_flag		 0
+mmas_flag		 1
+bwas_flag		 0
+acs_flag		 0
+
+allocate ants' memory ..
+
+ .. done
+thd_seed 4: 1491944622
+thd_seed 7: 1491944625
+thd_seed 8: 1491944626
+thd_seed 9: 1491944627
+thd_seed 5: 1491944623
+thd_seed 19: 1491944637
+thd_seed 6: 1491944624
+thd_seed 24: 1491944642
+thd_seed 25: 1491944643
+thd_seed 26: 1491944644
+thd_seed 27: 1491944645
+thd_seed 28: 1491944646
+thd_seed 29: 1491944647
+thd_seed 30: 1491944648
+thd_seed 0: 1491944618
+thd_seed 17: 1491944635
+thd_seed 10: 1491944628
+thd_seed 18: 1491944636
+thd_seed 20: 1491944638
+thd_seed 2: 1491944620
+thd_seed 21: 1491944639
+thd_seed 22: 1491944640
+thd_seed 23: 1491944641
+thd_seed 1: 1491944619
+thd_seed 3: 1491944621
+thd_seed 14: 1491944632
+thd_seed 13: 1491944631
+thd_seed 15: 1491944633
+thd_seed 12: 1491944630
+thd_seed 16: 1491944634
+thd_seed 11: 1491944629
+thd_seed 31: 1491944649
+Initialization took 0.0031368732 seconds
+best 9506, iteration: 1, time 0.01
+best 9214, iteration: 14, time 0.10
+best 9114, iteration: 35, time 0.21
+best 9052, iteration: 41, time 0.24
+best 9018, iteration: 53, time 0.31
+best 9004, iteration: 54, time 0.32
+best 8894, iteration: 56, time 0.33
+best 8528, iteration: 69, time 0.40
+best 8105, iteration: 89, time 0.51
+
+best so far 8105, iteration: 100, time 0.71, b_fac 4.64423
+try 0, iteration 100, b-fac 4.644231 
+
+best 8035, iteration: 116, time 0.80
+best 8029, iteration: 118, time 0.81
+best 7971, iteration: 142, time 0.94
+best 7968, iteration: 150, time 0.98
+best 7856, iteration: 159, time 1.03
+
+ Best Solution in try 0 is 7856
+ Best Solution was found after 159 iterations
+
+try 0, Best 7856, found at iteration 159, found at time 1.029040
+ t_avgbest = 1.029040
+ t_avgtotal = 1.029139

@@ -14,7 +14,7 @@ function length
 function path_time
 {
     printf "%s" $(tail -n1 $1 | \
-                  cut -d" " -f 3)
+                  cut -d" " -f 4)
 }
 
 # get accuracy
@@ -29,7 +29,7 @@ function acc
 
 out=${1:-data.csv}
 
-printf "1,2,4,8,16,32,64,gpu,\n" > $out
+printf "1,2,4,8,16,32,64,ser,\n" > $out
 
 let count=0
 for f in $(ls results/* | sort -V); do
