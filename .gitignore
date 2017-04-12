@@ -3,3 +3,4 @@ results/
 out/
 omp_acotsp
 tags
+*.csv
