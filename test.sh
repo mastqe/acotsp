@@ -15,7 +15,7 @@ for x in $(seq 1 $arg) ; do
 
         # execute serial version
         printf "Serial\n"
-        ./acotsp -r 1 --quiet -l 0 --ants 992 -o $opt -t 1000 \
+        ./acotsp -r 1 --quiet -l 0 --ants 992 -o $opt -t 5000 \
             -i ../tsplib/${file}.tsp > ./results/${num}_ser
 
         # iterate over desired core counts
@@ -23,7 +23,7 @@ for x in $(seq 1 $arg) ; do
             printf "cores: $i\n"
         
             export OMP_NUM_THREADS=$i
-            ./omp_acotsp -r 1 --quiet -l 0 --ants 992 -o $opt -t 1000 \
+            ./omp_acotsp -r 1 --quiet -l 0 --ants 992 -o $opt -t 5000 \
                 -i ../tsplib/${file}.tsp > ./results/${num}_${i}
 
         done
