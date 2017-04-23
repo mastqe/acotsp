@@ -2,11 +2,13 @@
 VERSION=1.03
 
 CC = gcc
+NVCC = nvcc
 OPTIM_FLAGS = -O3
 WARN_FLAGS = -Wall -std=c99 -pedantic -Wno-unused-result
 # PROF_FLAGS = -pg -fprofile-arcs -ftest-coverage
+# DEBUG_FLAGS = -g
 PAR_FLAGS = -fopenmp
-DEBUG_FLAGS = #-g
+CUDA_FLAGS = -lcudart
 CFLAGS = $(WARN_FLAGS) $(OPTIM_FLAGS) $(PROF_FLAGS) $(DEBUG_FLAGS)
 
 LDLIBS = -lm
@@ -16,10 +18,10 @@ LDLIBS = -lm
 #TIMER = dos
 TIMER = unix
 
-all: clean acotsp omp_acotsp
+all: clean acotsp omp_acotsp cuda_acotsp
 
 clean:
-	@$(RM) ./out/* acotsp omp_acotsp
+	@$(RM) ./out/* acotsp omp_acotsp cuda_acotsp
 
 acotsp: ./out/acotsp.o ./out/TSP.o ./out/ants.o ./out/InOut.o ./out/utilities.o ./out/ls.o ./out/parse.o ./out/$(TIMER)_timer.o
 	$(CC) $(CFLAGS) -o acotsp $^ $(LDLIBS)
@@ -27,11 +29,17 @@ acotsp: ./out/acotsp.o ./out/TSP.o ./out/ants.o ./out/InOut.o ./out/utilities.o 
 omp_acotsp: ./out/omp_acotsp.o ./out/TSP.o ./out/omp_ants.o ./out/InOut.o ./out/utilities.o ./out/ls.o ./out/parse.o ./out/$(TIMER)_timer.o
 	$(CC) $(CFLAGS) $(PAR_FLAGS) -o omp_acotsp $^ $(LDLIBS)
 
+cuda_acotsp: ./out/cuda_acotsp.o ./out/TSP.o ./out/cuda_ants.o ./out/InOut.o ./out/utilities.o ./out/ls.o ./out/parse.o ./out/$(TIMER)_timer.o
+	$(NVCC) $(CUDA_FLAGS) -o cuda_acotsp $^ $(LDLIBS)
+
 ./out/acotsp.o: ./src/acotsp.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 ./out/omp_acotsp.o: ./src/acotsp.c
 	$(CC) $(CFLAGS) $(PAR_FLAGS) -c -o $@ $<
+
+./out/cuda_acotsp.o: ./src/cuda_acotsp.cu
+	$(NVCC) $(CUDA_FLAGS) -c -o $@ $<
 
 ./out/TSP.o: ./src/TSP.c ./src/TSP.h
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -41,6 +49,9 @@ omp_acotsp: ./out/omp_acotsp.o ./out/TSP.o ./out/omp_ants.o ./out/InOut.o ./out/
 
 ./out/omp_ants.o: ./src/ants.c ./src/ants.h
 	$(CC) $(CFLAGS) $(PAR_FLAGS) -c -o $@ $<
+
+./out/cuda_ants.o: ./src/cuda_ants.cu ./src/cuda_ants.h
+	$(NVCC) $(CUDA_FLAGS) -c -o $@ $<
 
 ./out/InOut.o: ./src/InOut.c ./src/InOut.h
 	$(CC) $(CFLAGS) -c -o $@ $<
