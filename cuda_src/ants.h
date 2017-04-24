@@ -60,14 +60,15 @@ zero */
 
 #define MAX_ANTS       1024    /* max no. of ants */
 #define MAX_NEIGHBOURS 512     /* max. no. of nearest neighbours in candidate set */
+#define MAX_CITIES     1000    /* simplification for GPU programming */
 
 /* Note that *tour needs to be allocated for length n+1 since the first city of
 a tour (at position 0) is repeated at position n. This is done to make the
 computation of the tour length easier
 */
 typedef struct {
-  long int  *tour;
-  char      *visited;
+  long int  tour[MAX_CITIES + 1];
+  char      visited[MAX_CITIES];
   long int  tour_length;
 } ant_struct;
 
@@ -130,8 +131,7 @@ void compute_nn_list_total_information( void );
 
 /* Ants' solution construction */
 
-__device__
-void ant_empty_memory( ant_struct *a );
+__device__ void ant_empty_memory( ant_struct *a );
 
 __device__
 void place_ant( ant_struct *a , long int phase );

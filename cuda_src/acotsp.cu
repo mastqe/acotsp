@@ -66,10 +66,8 @@
 #include "timer.h"
 #include "ls.h"
 
-#ifdef _OPENMP
-    #include <omp.h>
-#endif
-
+struct d_problem instance_to_device;
+struct d_problem* d_instance;
 
 long int termination_condition( void )
 /*
@@ -550,7 +548,20 @@ void pheromone_trail_update( void )
     }
 }
 
+/** setup memory on GPU and copy data */
+void init_device() {
+    instance_to_device.n = n;
+    instance_to_device.n_near = nn_ants;
 
+    long nn = MAX(nn_ls,nn_ants);
+    if ( nn >= n )
+        nn = n - 1;
+
+    instance_to_device.nn_list = (long**)malloc(sizeof(long int) * n * 
+                                                nn + n * sizeof(long int *));
+    /* instance_to_device.nn_list; */
+    /* instance_to_device.distance; */
+}
 
 /* --- main program ------------------------------------------------------ */
 
@@ -573,6 +584,8 @@ int main(int argc, char *argv[])
     instance.nn_list = compute_nn_lists();
     pheromone = generate_double_matrix( n, n );
     total = generate_double_matrix( n, n );
+
+    init_device();
 
     time_used = elapsed_time( REAL );
     printf("Initialization took %.10f seconds\n",time_used);

@@ -116,31 +116,31 @@ void allocate_ants ( void )
 
 */
 {
-    long int i;
+    /* long int i; */
 
     if((ant = (ant_struct*)malloc(sizeof( ant_struct ) * n_ants +
                     sizeof(ant_struct *) * n_ants   )) == NULL){
         printf("Out of memory, exit.");
         exit(1);
     }
-    for ( i = 0 ; i < n_ants ; i++ ) {
-        ant[i].tour        = (long*)calloc(n+1, sizeof(long int));
-        ant[i].visited     = (char*)calloc(n, sizeof(char));
-    }
+    /* for ( i = 0 ; i < n_ants ; i++ ) { */
+        /* ant[i].tour        = (long*)calloc(n+1, sizeof(long int)); */
+        /* ant[i].visited     = (char*)calloc(n, sizeof(char)); */
+    /* } */
 
     if((best_so_far_ant = (ant_struct*)malloc(sizeof( ant_struct ) )) == NULL){
         printf("Out of memory, exit.");
         exit(1);
     }
-    best_so_far_ant->tour        = (long*)calloc(n+1, sizeof(long int));
-    best_so_far_ant->visited     = (char*)calloc(n, sizeof(char));
+    /* best_so_far_ant->tour        = (long*)calloc(n+1, sizeof(long int)); */
+    /* best_so_far_ant->visited     = (char*)calloc(n, sizeof(char)); */
 
     if((restart_best_ant = (ant_struct*)malloc(sizeof( ant_struct ) )) == NULL){
         printf("Out of memory, exit.");
         exit(1);
     }
-    restart_best_ant->tour        = (long*)calloc(n+1, sizeof(long int));
-    restart_best_ant->visited     = (char*)calloc(n, sizeof(char));
+    /* restart_best_ant->tour        = (long*)calloc(n+1, sizeof(long int)); */
+    /* restart_best_ant->visited     = (char*)calloc(n, sizeof(char)); */
 
     /*
      * if ((prob_of_selection = malloc(sizeof(double) * (nn_ants + 1))) == NULL) {
