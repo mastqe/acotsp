@@ -17,7 +17,8 @@ Makefile builds both a fully serial and OpenMP version of the program.
 * `find.sh` - used to simplify grep calls to find information in the source code
 
 ### DISCLAIMERS
-The CUDA code supplied here is a Proof of Concept, there are some assumptions hardcoded in.
+The CUDA code supplied here is not complete and will not compile.
+The plan was a Proof of Concept so there are some assumptions hardcoded in.
 The max cities is currently 1000, the number of nearest neighbor ants is 20.
 
 ### Links
