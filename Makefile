@@ -8,7 +8,7 @@ WARN_FLAGS = -Wall -std=c99 -pedantic -Wno-unused-result
 # PROF_FLAGS = -pg -fprofile-arcs -ftest-coverage
 # DEBUG_FLAGS = -g
 PAR_FLAGS = -fopenmp
-CUDA_FLAGS = -lcudart -lcurand -arch=sm_35
+CUDA_FLAGS = -lcudart -lcurand -arch=sm_35 
 CFLAGS = $(WARN_FLAGS) $(OPTIM_FLAGS) $(PROF_FLAGS) $(DEBUG_FLAGS)
 
 LDLIBS = -lm
@@ -18,7 +18,7 @@ LDLIBS = -lm
 #TIMER = dos
 TIMER = unix
 
-all: clean acotsp omp_acotsp cuda_acotsp
+all: clean acotsp omp_acotsp 
 
 clean:
 	@$(RM) ./out/* acotsp omp_acotsp cuda_acotsp
@@ -29,25 +29,10 @@ acotsp: ./out/acotsp.o ./out/TSP.o ./out/ants.o ./out/InOut.o ./out/utilities.o 
 ./out/acotsp.o: ./src/acotsp.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-./out/TSP.o: ./src/TSP.c ./src/TSP.h
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-./out/ants.o: ./src/ants.c ./src/ants.h
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-./out/InOut.o: ./src/InOut.c ./src/InOut.h
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-./out/utilities.o: ./src/utilities.c ./src/utilities.h
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-./out/ls.o: ./src/ls.c ./src/ls.h
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-./out/parse.o: ./src/parse.c ./src/parse.h
-	$(CC) $(CFLAGS) -c -o $@ $<
-
 ./out/$(TIMER)_timer.o: ./src/$(TIMER)_timer.c ./src/timer.h
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+./out/%.o: ./src/%.c ./src/%.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 # OpenMP section - only certain files need special compilation
@@ -64,32 +49,14 @@ omp_acotsp: ./out/omp_acotsp.o ./out/TSP.o ./out/omp_ants.o ./out/InOut.o ./out/
 # CUDA Section - for simplicity all code is copied and compiled 
 # 			independently from CPU versions
 
-cuda_acotsp: ./out/cuda_acotsp.o ./out/cuda_TSP.o ./out/cuda_ants.o ./out/cuda_InOut.o ./out/cuda_utilities.o ./out/cuda_ls.o ./out/cuda_parse.o ./out/cuda_$(TIMER)_timer.o
-	$(NVCC) -lcudart -lcurand -arch=sm_35 -o $@ $^ $(LDLIBS)
+cuda_acotsp: ./out/cuda.o ./out/cuda_acotsp.o ./out/cuda_TSP.o ./out/cuda_ants.o ./out/cuda_InOut.o ./out/cuda_utilities.o ./out/cuda_ls.o ./out/cuda_parse.o ./out/cuda_$(TIMER)_timer.o
+	$(NVCC) -lcudart -lcurand -I./cuda_src -I. -arch=sm_35 -o $@ $^ $(LDLIBS)
 
-# ./out/cuda_link.o: ./out/cuda_acotsp.o ./out/cuda_ants.o
-	# $(NVCC) $(CUDA_FLAGS) -dlink -o $@ $^ $(LDLIBS)
+./out/cuda.o: ./cuda_src/cuda.cu
+	$(NVCC) $(CUDA_FLAGS) -I./cuda_src -I. -dc -o $@ $<
 
-./out/cuda_acotsp.o: ./cuda_src/acotsp.cu
-	$(NVCC) $(CUDA_FLAGS) -dc -o $@ $<
-
-./out/cuda_TSP.o: ./cuda_src/TSP.c ./src/TSP.h
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-./out/cuda_ants.o: ./cuda_src/ants.cu ./src/ants.h
-	$(NVCC) $(CUDA_FLAGS) -dc -o $@ $<
-
-./out/cuda_InOut.o: ./cuda_src/InOut.c ./src/InOut.h
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-./out/cuda_utilities.o: ./cuda_src/utilities.c ./src/utilities.h
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-./out/cuda_ls.o: ./cuda_src/ls.c ./cuda_src/ls.h
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-./out/cuda_parse.o: ./cuda_src/parse.c ./cuda_src/parse.h
-	$(CC) $(CFLAGS) -c -o $@ $<
+./out/cuda_%.o: ./cuda_src/%.c ./cuda_src/%.h
+	$(NVCC) -x c -c -I./cuda_src -I. -o $@ $<
 
 ./out/cuda_$(TIMER)_timer.o: ./cuda_src/$(TIMER)_timer.c ./cuda_src/timer.h
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(NVCC) -x c -c -o $@ $<

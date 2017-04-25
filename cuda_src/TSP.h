@@ -76,7 +76,7 @@ struct problem{
 
 extern struct problem instance;
 
-long int n;          /* number of cities in the instance to be solved */
+extern long int n;          /* number of cities in the instance to be solved */
 
 long int  (*distance)(long int, long int);  /* pointer to function returning distance */
 
