@@ -60,10 +60,18 @@
 
 #include "InOut.h"
 #include "TSP.h"
-#include "cuda_ants.h"
+#include "ants.h"
 #include "ls.h"
 #include "utilities.h"
 #include "timer.h"
+#include "cuda.h"
+
+ant_struct *ant_to_d;
+__device__ ant_struct* d_ant;
+
+double **total_to_d;
+__device__ double **d_total;
+
 
 ant_struct *ant;
 ant_struct *best_so_far_ant;
@@ -395,7 +403,7 @@ void ant_empty_memory( ant_struct *a )
 {
     long int   i;
 
-    for( i = 0 ; i < n ; i++ ) {
+    for( i = 0 ; i < d_instance->n ; i++ ) {
         a->visited[i]=FALSE;
     }
 }
@@ -413,7 +421,7 @@ void place_ant( ant_struct *a , long int step )
     long int     rnd;
 
     /* random number between 0 .. n-1 */
-    rnd = (long int) (ran01( &seed ) * (double) n); // TODO CUDA rand
+    rnd = (long int) (curand_uniform(&state) * (double) d_instance->n);
 
     a->tour[step] = rnd;
     a->visited[rnd] = TRUE;
@@ -433,18 +441,18 @@ void choose_best_next( ant_struct *a, long int phase )
     long int city, current_city, next_city;
     double   value_best;
 
-    next_city = n;
+    next_city = d_instance->n;
     DEBUG( assert ( phase > 0 && phase < n ); );
     current_city = a->tour[phase-1];
     value_best = -1.;             /* values in total matrix are always >= 0.0 */
 
-    for ( city = 0 ; city < n ; city++ ) {
+    for ( city = 0 ; city < d_instance->n ; city++ ) {
         if ( a->visited[city] )
             ; /* city already visited, do nothing */
         else {
-            if ( total[current_city][city] > value_best ) {
+            if ( d_total[current_city][city] > value_best ) {
                 next_city = city;
-                value_best = total[current_city][city];
+                value_best = d_total[current_city][city];
             }
         }
     }
@@ -471,18 +479,18 @@ void neighbour_choose_best_next( ant_struct *a, long int phase )
     long int i, current_city, next_city, help_city;
     double   value_best, help;
 
-    next_city = n;
+    next_city = d_instance->n;
     DEBUG( assert ( phase > 0 && phase < n ); );
     current_city = a->tour[phase-1];
     DEBUG ( assert ( 0 <= current_city && current_city < n ); );
     value_best = -1.;             /* values in total matix are always >= 0.0 */
 
-    for ( i = 0 ; i < nn_ants ; i++ ) {
-        help_city = instance.nn_list[current_city][i];
+    for ( i = 0 ; i < d_instance->n_near ; i++ ) {
+        help_city = d_instance->nn_list[current_city][i];
         if ( a->visited[help_city] )
             ;   /* city already visited, do nothing */
         else {
-            help = total[current_city][help_city];
+            help = d_total[current_city][help_city];
             if ( help > value_best ) {
                 value_best = help;
                 next_city = help_city;
@@ -490,7 +498,7 @@ void neighbour_choose_best_next( ant_struct *a, long int phase )
         }
     }
 
-    if ( next_city == n )
+    if ( next_city == d_instance->n )
         /* all cities in nearest neighbor list were already visited */
         choose_best_next( a, phase );
     else {
@@ -552,19 +560,13 @@ void neighbour_choose_and_move_to_next( ant_struct *a , long int phase )
     long int i, help;
     long int current_city;
     double   rnd, partial_sum = 0., sum_prob = 0.0;
-    double   *prob_of_selection; /* stores the selection probabilities
+    double   prob_of_selection[NN_ANTS + 1]; /* stores the selection probabilities
                                            of the nearest neighbor cities */
-
-    if ((prob_of_selection = (double*)malloc(sizeof(double) * (nn_ants + 1))) == NULL) {
-        printf("Out of memory, exit.");
-        exit(1);
-    }
+    
     /* Ensures that we do not run over the last element in the random wheel. */
-    prob_of_selection[nn_ants] = HUGE_VAL;
+    prob_of_selection[d_instance->n_near] = HUGE_VAL;
 
     double   *prob_ptr;
-
-    long int* this_seed = &seed;
 
     /** NEVER USED in our default case - ignore for simplicity
     if ( (q_0 > 0.0) && (ran01( this_seed ) < q_0)  ) {
@@ -584,13 +586,13 @@ void neighbour_choose_and_move_to_next( ant_struct *a , long int phase )
 
     DEBUG( assert ( current_city >= 0 && current_city < n ); );
 
-    for ( i = 0 ; i < nn_ants ; i++ ) {
-        if ( a->visited[instance.nn_list[current_city][i]] )
+    for ( i = 0 ; i < d_instance->n_near ; i++ ) {
+        if ( a->visited[d_instance->nn_list[current_city][i]] )
             prob_ptr[i] = 0.0;   /* city already visited */
         else {
             DEBUG( assert ( instance.nn_list[current_city][i] >= 0 && instance.nn_list[current_city][i] < n ); );
 
-            prob_ptr[i] = total[current_city][instance.nn_list[current_city][i]];
+            prob_ptr[i] = d_total[current_city][d_instance->nn_list[current_city][i]];
             sum_prob += prob_ptr[i];
         }
     }
@@ -603,7 +605,7 @@ void neighbour_choose_and_move_to_next( ant_struct *a , long int phase )
         /* at least one neighbor is eligible, chose one according to the
            selection probabilities */
 
-        rnd = ran01( &seed );
+        rnd = curand_uniform(&state);
 
         rnd *= sum_prob;
         i = 0;
@@ -617,7 +619,7 @@ void neighbour_choose_and_move_to_next( ant_struct *a , long int phase )
 
         /* This may very rarely happen because of rounding if rnd is
            close to 1.  */
-        if (i == nn_ants) {
+        if (i == d_instance->n_near) {
             neighbour_choose_best_next(a, phase);
             return;
         }
@@ -625,7 +627,7 @@ void neighbour_choose_and_move_to_next( ant_struct *a , long int phase )
         DEBUG( assert ( 0 <= i && i < nn_ants); );
         DEBUG( assert ( prob_ptr[i] >= 0.0); );
 
-        help = instance.nn_list[current_city][i];
+        help = d_instance->nn_list[current_city][i];
 
         DEBUG( assert ( help >= 0 && help < n ); );
         DEBUG( assert ( a->visited[help] == FALSE ); );
@@ -633,8 +635,6 @@ void neighbour_choose_and_move_to_next( ant_struct *a , long int phase )
         a->tour[phase] = help; /* instance.nn_list[current_city][i]; */
         a->visited[help] = TRUE;
     }
-
-    free(prob_of_selection);
 }
 
 
@@ -938,38 +938,40 @@ void copy_from_to(ant_struct *a1, ant_struct *a2)
 
 
 
-long int nn_tour( void )
 /*
-      FUNCTION:       generate some nearest neighbor tour and compute tour length
-      INPUT:          none
-      OUTPUT:         none
-      (SIDE)EFFECTS:  needs ant colony and one statistic ants
-*/
-{
-    long int phase, help;
-
-    ant_empty_memory( &ant[0] );
-
-    phase = 0; /* counter of the construction steps */
-    place_ant( &ant[0], phase);
-
-    while ( phase < n-1 ) {
-        phase++;
-        choose_closest_next( &ant[0],phase);
-    }
-    phase = n;
-    ant[0].tour[n] = ant[0].tour[0];
-    if ( ls_flag ) {
-        two_opt_first( ant[0].tour );
-    }
-    n_tours += 1;
-    /*   copy_from_to( &ant[0], best_so_far_ant ); */
-    ant[0].tour_length = compute_tour_length( ant[0].tour );
-
-    help = ant[0].tour_length;
-    ant_empty_memory( &ant[0] );
-    return help;
-}
+ * long int nn_tour( void )
+ **
+ *       FUNCTION:       generate some nearest neighbor tour and compute tour length
+ *       INPUT:          none
+ *       OUTPUT:         none
+ *       (SIDE)EFFECTS:  needs ant colony and one statistic ants
+ **
+ * {
+ *     long int phase, help;
+ * 
+ *     ant_empty_memory( &ant[0] );
+ * 
+ *     phase = 0; [> counter of the construction steps <]
+ *     place_ant( &ant[0], phase);
+ * 
+ *     while ( phase < n-1 ) {
+ *         phase++;
+ *         choose_closest_next( &ant[0],phase);
+ *     }
+ *     phase = n;
+ *     ant[0].tour[n] = ant[0].tour[0];
+ *     if ( ls_flag ) {
+ *         two_opt_first( ant[0].tour );
+ *     }
+ *     n_tours += 1;
+ *     [>   copy_from_to( &ant[0], best_so_far_ant ); <]
+ *     ant[0].tour_length = compute_tour_length( ant[0].tour );
+ * 
+ *     help = ant[0].tour_length;
+ *     ant_empty_memory( &ant[0] );
+ *     return help;
+ * }
+ */
 
 
 

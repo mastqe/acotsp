@@ -60,7 +60,10 @@ zero */
 
 #define MAX_ANTS       1024    /* max no. of ants */
 #define MAX_NEIGHBOURS 512     /* max. no. of nearest neighbours in candidate set */
+
+/** HARDCODED for Proof of Concept */
 #define MAX_CITIES     1000    /* simplification for GPU programming */
+#define NN_ANTS        20      /* simplification for GPU programming */
 
 /* Note that *tour needs to be allocated for length n+1 since the first city of
 a tour (at position 0) is repeated at position n. This is done to make the
@@ -80,7 +83,6 @@ extern double   **pheromone; /* pheromone matrix, one entry for each arc */
 extern double   **total;     /* combination of pheromone times heuristic information */
 
 extern double   *prob_of_selection;
-
 
 extern long int n_ants;      /* number of ants */
 extern long int nn_ants;     /* length of nearest neighbor lists for the ants'
@@ -131,21 +133,7 @@ void compute_nn_list_total_information( void );
 
 /* Ants' solution construction */
 
-__device__ void ant_empty_memory( ant_struct *a );
-
-__device__
-void place_ant( ant_struct *a , long int phase );
-
-__device__
-void choose_best_next( ant_struct *a, long int phase );
-
-__device__
-void neighbour_choose_best_next( ant_struct *a, long int phase );
-
 void choose_closest_next( ant_struct *a, long int phase );
-
-__device__
-void neighbour_choose_and_move_to_next( ant_struct *a , long int phase );
 
 /* Auxiliary procedures related to ants */
 

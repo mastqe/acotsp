@@ -65,9 +65,37 @@
 #include "TSP.h"
 #include "timer.h"
 #include "ls.h"
+#include "cuda.h"
 
-struct d_problem instance_to_device;
-struct d_problem* d_instance;
+d_problem_t  instance_for_d;
+d_problem_t* instance_to_d;
+__device__ d_problem_t* d_instance;
+
+__device__ curandState_t state;
+
+/******************************************************************************/
+/*** helper code from http://cs.txstate.edu/~burtscher/research/TSP_GPU/ ******/
+/******************************************************************************/
+
+static void CudaTest(char *msg)
+{
+    cudaError_t e;
+
+    cudaThreadSynchronize();
+    if (cudaSuccess != (e = cudaGetLastError())) {
+        fprintf(stderr, "%s: %d\n", msg, e); 
+        fprintf(stderr, "%s\n", cudaGetErrorString(e));
+        exit(-1);
+    }
+}
+
+#define mallocOnGPU(addr, size) if (cudaSuccess != cudaMalloc((void **)&addr, size)) fprintf(stderr, "could not allocate GPU memory\n");  CudaTest("couldn't allocate GPU memory");
+#define copyToGPU(to, from, size) if (cudaSuccess != cudaMemcpy(to, from, size, cudaMemcpyHostToDevice)) fprintf(stderr, "copying of data to device failed\n");  CudaTest("data copy to device failed");
+#define copyFromGPU(to, from, size) if (cudaSuccess != cudaMemcpy(to, from, size, cudaMemcpyDeviceToHost)) fprintf(stderr, "copying of data from device failed\n");  CudaTest("data copy from device failed");
+#define copyFromGPUSymbol(to, from, size) if (cudaSuccess != cudaMemcpyFromSymbol(to, from, size)) fprintf(stderr, "copying of symbol from device failed\n");  CudaTest("symbol copy from device failed");
+#define copyToGPUSymbol(to, from, size) if (cudaSuccess != cudaMemcpyToSymbol(to, from, size)) fprintf(stderr, "copying of symbol to device failed\n");  CudaTest("symbol copy to device failed");
+
+/******************************************************************************/
 
 long int termination_condition( void )
 /*
@@ -81,9 +109,25 @@ long int termination_condition( void )
 	  (best_so_far_ant->tour_length <= optimal));
 }
 
+__device__
+long int d_compute_tour_length( long int *t )
+/*
+      FUNCTION: compute the tour length of tour t
+      INPUT:    pointer to tour t
+      OUTPUT:   tour length of tour t
+*/
+{
+    int      i;
+    long int tour_length = 0;
+
+    for ( i = 0 ; i < d_instance->n ; i++ ) {
+        tour_length += d_instance->distance[t[i]][t[i+1]];
+    }
+    return tour_length;
+}
 
 __global__
-void construct_solutions( void )
+void construct_solutions( ant_struct* ant_to_d, d_problem_t* instance_to_d, double** total_to_d )
 /*
       FUNCTION:       CUDA Kernel to manage the solution construction phase
       INPUT:          none
@@ -91,26 +135,31 @@ void construct_solutions( void )
       (SIDE)EFFECTS:  when finished, all ants of the colony have constructed a solution
 */
 {
+    // make parameters global
+    d_ant = ant_to_d;
+    d_instance = instance_to_d;
+    d_total = total_to_d;
+
     long int step;    /* counter of the number of construction steps */
 
     TRACE ( printf("construct solutions for all ants\n"); );
 
     /* Mark all cities as unvisited */
-    ant_empty_memory( &ant[threadIdx.x] );
+    ant_empty_memory( &d_ant[threadIdx.x] );
 
     /* Place the ants on random initial city */
-    place_ant( &ant[threadIdx.x], 0 ); // TODO uses non-reentrant ran01
+    place_ant( &d_ant[threadIdx.x], 0 ); 
 
-    for ( step = 1; step < n; step++ ) {
-        neighbour_choose_and_move_to_next( &ant[threadIdx.x], step );
+    for ( step = 1; step < d_instance->n; step++ ) {
+        neighbour_choose_and_move_to_next( &d_ant[threadIdx.x], step );
     }
 
-    step = n;
+    step = d_instance->n;
 
-        // Connect the tour (ie end at beginning city)
-        ant[threadIdx.x].tour[n] = ant[threadIdx.x].tour[0];
-        // Sums distances of all segements in tour
-        ant[threadIdx.x].tour_length = compute_tour_length( ant[threadIdx.x].tour );
+    // Connect the tour (ie end at beginning city)
+    d_ant[threadIdx.x].tour[d_instance->n] = d_ant[threadIdx.x].tour[0];
+    // Sums distances of all segements in tour
+    d_ant[threadIdx.x].tour_length = d_compute_tour_length( d_ant[threadIdx.x].tour );
 }
 
 
@@ -548,19 +597,38 @@ void pheromone_trail_update( void )
     }
 }
 
+/** init CUDA random number generator */
+__global__ 
+void rand_init() {
+    curand_init((unsigned long long)clock(), threadIdx.x, 0, &state);    
+}
+
 /** setup memory on GPU and copy data */
 void init_device() {
-    instance_to_device.n = n;
-    instance_to_device.n_near = nn_ants;
+    rand_init<<<n_ants, 1>>>();
+
+    instance_for_d.n = n;
+    instance_for_d.n_near = nn_ants;
 
     long nn = MAX(nn_ls,nn_ants);
     if ( nn >= n )
         nn = n - 1;
 
-    instance_to_device.nn_list = (long**)malloc(sizeof(long int) * n * 
+    instance_for_d.nn_list = (long**)malloc(sizeof(long int) * n * 
                                                 nn + n * sizeof(long int *));
     /* instance_to_device.nn_list; */
     /* instance_to_device.distance; */
+
+    mallocOnGPU(instance_to_d, sizeof(d_problem_t));
+    copyToGPU(instance_to_d, &instance_for_d, sizeof(d_problem_t));
+
+    /* setup ants for device */
+    mallocOnGPU(ant_to_d, sizeof(ant_struct) * n_ants);
+
+    /* setup pheromone on device (size taken from generate_double_matrix */
+    int mat_size = sizeof(double) * n * n + sizeof(double *) * n;
+    mallocOnGPU(total_to_d, mat_size);
+    copyToGPU(total_to_d, total, mat_size);
 }
 
 /* --- main program ------------------------------------------------------ */
@@ -596,8 +664,12 @@ int main(int argc, char *argv[])
 
         while ( !termination_condition() ) {
 
-            //TODO run kernel
+            copyToGPU(ant_to_d, ant, sizeof(ant_struct) * n_ants);
+            
             //construct_solutions();
+            construct_solutions<<<n_ants, 1>>>(ant_to_d, instance_to_d, total_to_d);
+
+            copyFromGPU(ant, ant_to_d, sizeof(ant_struct) * n_ants);
 
             // update n_tours
             n_tours += n_ants;
@@ -608,6 +680,8 @@ int main(int argc, char *argv[])
             update_statistics();
 
             pheromone_trail_update();
+
+            // TODO copy pheromones back
 
             search_control_and_statistics();
 

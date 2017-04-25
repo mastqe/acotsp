@@ -74,16 +74,6 @@ struct problem{
                                            sorted list of n_near nearest neighbors */
 };
 
-struct d_problem {
-  long int      n;                      /* number of cities */
-  long int      n_near;                 /* number of nearest neighbors */
-  long int      **distance;	        /* distance matrix: distance[i][j] gives distance
-					   between city i und j */
-  long int      **nn_list;              /* nearest neighbor list; contains for each node i a
-                                           sorted list of n_near nearest neighbors */
-};
-
-extern struct d_problem instance_to_device;
 extern struct problem instance;
 
 long int n;          /* number of cities in the instance to be solved */
